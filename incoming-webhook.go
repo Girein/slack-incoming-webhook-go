@@ -3,7 +3,6 @@ package slack
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -23,24 +22,29 @@ func init() {
 }
 
 // PostMessage post a message to Incoming Webhook URL
-func PostMessage(text string) {
+func PostMessage(text string) error {
 	body, err := json.Marshal(map[string]string{"text": text})
 	if err != nil {
-		fmt.Println("[Slack - Incoming Webhook - Post Message] JSON encode body got error:", err)
+		return err
 	}
 
 	client := &http.Client{}
 	request, err := http.NewRequest("POST", webhookURL, bytes.NewBuffer(body))
 	if err != nil {
-		fmt.Println("[Slack - Incoming Webhook - Post Message] Create HTTP request got error:", err)
+		return err
 	}
 
 	request.Header.Set("Content-Type", "application/json")
 
 	response, err := client.Do(request)
 	if err != nil {
-		fmt.Println("[Slack - Incoming Webhook - Post Message] Send HTTP request got error:", err)
+		return err
 	}
 
-	response.Body.Close()
+	err = response.Body.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
